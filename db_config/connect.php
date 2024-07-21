@@ -1,9 +1,9 @@
 <?php
 // Database connection settings
-$host = 'localhost';  // Usually 'localhost' if running locally
+$host = 'internetservice.c9wqqwm4ciqb.us-east-1.rds.amazonaws.comt';  // Usually 'localhost' if running locally
 $db = 'InternetService';  // Replace with your database name
 $user = 'postgres';  // Replace with your database username
-$pass = 'admin';  // Replace with your database password
+$pass = 'Vklr3VDe0ALZxyn0dGFf';  // Replace with your database password
 $port = '5432';  // Default PostgreSQL port
 
 // DSN (Data Source Name)
