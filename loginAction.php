@@ -7,7 +7,7 @@ $pass = $_POST['Password'];
 
 try {
     // Prepare the SQL query with correct column names and case sensitivity
-    $query = 'SELECT * FROM public."admin" WHERE "username" = :user AND "Password" = :password';
+    $query = 'SELECT * FROM public."admin" WHERE "user" = :user AND "Password" = :password';
     $stmt = $pdo->prepare($query);
 
     // Bind parameters
