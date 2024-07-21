@@ -15,14 +15,13 @@ try {
     // Fetch customer data for the logged-in admin
     $query = "SELECT * FROM customer WHERE a_id = :admin_id";
     $stmt = $pdo->prepare($query);
-    $stmt->bindParam(':admin_id', $admin_id);
+    $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -43,6 +42,12 @@ try {
                 width: auto;
             }
         }
+        .paid-yes {
+            color: blue;
+        }
+        .paid-no {
+            color: red;
+        }
     </style>
 </head>
 <body>
@@ -55,11 +60,11 @@ try {
             <table class="table table-bordered mt-4">
                 <thead>
                     <tr>
-                        <th>name</th>
+                        <th>c_name</th>
                         <th>address</th>
                         <th>phone</th>
                         <th>bundle</th>
-                        <th>bundle price</th>
+                        <th>bundle_price</th>
                         <th>paid</th>
                         <th>Actions</th>
                     </tr>
@@ -67,7 +72,9 @@ try {
                 <tbody>
                     <?php foreach ($customers as $customer): ?>
                         <tr>
-                            <td><?php echo htmlspecialchars($customer['c_name']); ?></td>
+                            <td class="<?php echo $customer['paid'] == 'Y' ? 'paid-yes' : 'paid-no'; ?>">
+                                <?php echo htmlspecialchars($customer['c_name']); ?>
+                            </td>
                             <td><?php echo htmlspecialchars($customer['address']); ?></td>
                             <td><?php echo htmlspecialchars($customer['phone']); ?></td>
                             <td><?php echo htmlspecialchars($customer['bundle']); ?></td>
@@ -94,8 +101,8 @@ try {
         </div>
 
         <?php
-            if(isset($_GET['flag'])){
-                if($_GET['flag']==1){
+            if (isset($_GET['flag'])) {
+                if ($_GET['flag'] == 1) {
                     echo "<b>Enter correct data</b>";
                 }
             }
@@ -104,7 +111,7 @@ try {
         <h3 class="mt-5">Add New Customer</h3>
         <form action="./add_customer.php" method="post">
             <div class="form-group">
-                <label for="name">Name</label>
+                <label for="c_name">Name</label>
                 <input type="text" class="form-control" id="c_name" name="c_name" required>
             </div>
             <div class="form-group">
@@ -155,7 +162,7 @@ try {
                 </div>
             </div>
             <div class="form-group">
-                <label for="bundle price">Bundle Price</label>
+                <label for="bundle_price">Bundle Price</label>
                 <input type="number" class="form-control" id="bundle_price" name="bundle_price" step="0.01" readonly>
             </div>
             <button type="submit" class="btn btn-primary">Add Customer</button>
