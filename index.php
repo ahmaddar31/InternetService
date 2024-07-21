@@ -60,11 +60,11 @@ try {
             <table class="table table-bordered mt-4">
                 <thead>
                     <tr>
-                        <th>c_name</th>
+                        <th>name</th>
                         <th>address</th>
                         <th>phone</th>
                         <th>bundle</th>
-                        <th>bundle_price</th>
+                        <th>bundle price</th>
                         <th>paid</th>
                         <th>Actions</th>
                     </tr>
