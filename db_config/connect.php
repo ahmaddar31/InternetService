@@ -1,13 +1,18 @@
 <?php
-// Database connection settings
-$host = 'internetservice.c9wqqwm4ciqb.us-east-1.rds.amazonaws.com';  // Corrected hostname
-$db = 'InternetService';  // Replace with your database name
-$user = 'postgres';  // Replace with your database username
-$pass = 'Vklr3VDe0ALZxyn0dGFf';  // Replace with your database password
-$port = '5432';  // Default PostgreSQL port
+// Get the Heroku database URL
+$dbUrl = getenv('DATABASE_URL');
+
+// Parse the URL to get the connection details
+$db = parse_url($dbUrl);
+
+$host = $db['host'];
+$port = $db['port'];
+$user = $db['user'];
+$pass = $db['pass'];
+$dbname = ltrim($db['path'], '/');
 
 // DSN (Data Source Name)
-$dsn = "pgsql:host=$host;port=$port;dbname=$db;";
+$dsn = "pgsql:host=$host;port=$port;dbname=$dbname;";
 
 try {
     // Create a PDO instance
