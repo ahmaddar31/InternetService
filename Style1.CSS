@@ -1,0 +1,96 @@
+.head div{
+    padding: 20px;
+}
+
+.head a{
+    color: white;
+    text-decoration: none;
+    
+}
+.head a:hover{
+
+    color: black;
+}
+center .head{
+    background-color: rgba(165, 185, 177, 0.811);
+    display: flex;
+    color: white;
+    justify-content: center;
+    align-items: center;
+    width: 40%;
+    border-radius: 10px;
+}
+
+.detailsmed{
+    margin-left: 3%;
+    margin-right: 3%;
+}
+.card{
+    margin-top: 4rem;
+    padding: 2rem;
+}
+
+
+label{
+    margin-right: 75%;
+}
+
+.form-control{
+    margin:0 5px;
+}
+
+.btn{
+    background-color:rgba(165, 185, 177, 0.811) ;
+}
+.btnr:hover{
+    transform: scale(1.1);
+}
+.carousel-inner{
+    width: 60%;
+}
+
+.over_img {
+    text-align: center;
+    overflow: auto;
+    margin: 20px 0;
+    z-index: 1;
+}
+
+.ph_name{
+    position: absolute;
+    text-align: center;
+    margin-top: 45%;
+    margin-right: 25%;
+    margin-left: 12%;
+    color: white;
+    font-size: 55px;
+}
+.ph_adr{
+    position: absolute;
+    text-align: center;
+    margin-top: 60%;
+    margin-right: 25%;
+    margin-left: 12%;
+    color: white;
+}
+
+
+
+
+.badge{
+    background-color:rgba(165, 185, 177, 0.811);
+    margin: 2% 5% 2% 2%;
+    padding: 10px;
+    color: white;
+}
+
+.img_entry{
+    width: 70%;
+}
+
+.btn-outline:hover{
+    background-color: rgba(165, 185, 177, 0.811);
+    color: white;
+}
+
+ 

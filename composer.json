@@ -1,0 +1,6 @@
+{
+    "name": "my-vendor/my-package",
+    "require": {
+        "twilio/sdk": "^8.2"
+    }
+}
