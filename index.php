@@ -16,6 +16,9 @@ if (isset($_GET['search'])) {
     $search = $_GET['search'];
 }
 
+// Initialize the total amount for customers with paid status 'Y'
+$total_amount_paid = 0;
+
 try {
     // Fetch customer data for the logged-in admin
     $query = "SELECT * FROM customer WHERE a_id = :admin_id AND c_name ILIKE :search";
@@ -26,11 +29,19 @@ try {
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+    // Calculate total amount for customers with paid status 'Y'
+    foreach ($customers as $customer) {
+        if ($customer['paid'] == 'Y') {
+            $total_amount_paid += $customer['bundle_price'];
+        }
+    }
+
     // Count total number of customers
     $total_customers = count($customers);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
+
 ?>
 
 <!DOCTYPE html>
@@ -120,6 +131,7 @@ try {
 
         <div>
             <p>Total Customers: <?php echo $total_customers; ?></p>
+            <p>Total Amount Paid: $<?php echo $total_amount_paid; ?></p>
         </div>
 
         <?php
