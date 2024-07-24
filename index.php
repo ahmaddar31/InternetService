@@ -10,18 +10,29 @@ if (!isset($_SESSION['userlog_info'])) {
 // Initialize the $customers variable
 $customers = [];
 $admin_id = $_SESSION['userlog_info']['id'];
+$search = '';
+
+if (isset($_GET['search'])) {
+    $search = $_GET['search'];
+}
 
 try {
     // Fetch customer data for the logged-in admin
-    $query = "SELECT * FROM customer WHERE a_id = :admin_id";
+    $query = "SELECT * FROM customer WHERE a_id = :admin_id AND c_name ILIKE :search";
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+    $search_term = '%' . $search . '%';
+    $stmt->bindParam(':search', $search_term, PDO::PARAM_STR);
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Count total number of customers
+    $total_customers = count($customers);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,6 +67,12 @@ try {
             <h2>Customer Table</h2>
             <a href="logout.php" class="btn btn-danger">Logout</a>
         </div>
+        
+        <form method="get" action="index.php" class="form-inline my-4">
+            <input class="form-control mr-sm-2" type="search" placeholder="Search by name" aria-label="Search" name="search" value="<?php echo htmlspecialchars($search); ?>">
+            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+
         <div class="table-responsive">
             <table class="table table-bordered mt-4">
                 <thead>
@@ -93,11 +110,16 @@ try {
                                     <input type="hidden" name="customer_id" value="<?php echo $customer['c_id']; ?>">
                                     <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                                 </form>
+                                <a href="edit_customer.php?id=<?php echo $customer['c_id']; ?>" class="btn btn-warning btn-sm">Edit</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
                 </tbody>
             </table>
+        </div>
+
+        <div>
+            <p>Total Customers: <?php echo $total_customers; ?></p>
         </div>
 
         <?php
@@ -168,6 +190,10 @@ try {
             <button type="submit" class="btn btn-primary">Add Customer</button>
         </form>
     </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const radioButtons = document.querySelectorAll('input[name="bundle"]');
