@@ -2,6 +2,7 @@
 // Path to the JSON file
 $jsonFilePath = __DIR__ . '/db_credentials.json';
 
+
 // Read and decode the JSON file
 if (!file_exists($jsonFilePath)) {
     die("JSON file not found");
