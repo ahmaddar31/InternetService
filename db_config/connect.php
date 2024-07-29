@@ -1,10 +1,28 @@
 <?php
+// Path to the JSON file
+$jsonFilePath = __DIR__ . '/db_credentials.json';
+
+// Read and decode the JSON file
+if (!file_exists($jsonFilePath)) {
+    die("JSON file not found");
+}
+
+$jsonData = file_get_contents($jsonFilePath);
+if ($jsonData === false) {
+    die("Error reading JSON file");
+}
+
+$credentials = json_decode($jsonData, true);
+if ($credentials === null) {
+    die("Error decoding JSON file");
+}
+
 // Database connection settings
-$host = 'c9mq4861d16jlm.cluster-czrs8kj4isg7.us-east-1.rds.amazonaws.com';  // Corrected hostname
-$db = 'd35md6qje9pcf2';  // Replace with your database name
-$user = 'uc40obp5cdmp7r';  // Replace with your database username
-$pass = 'p81fe3cd0ec3b7f0cd85824e36eb511cb21b347717f55694988f6ebb5ad3c2ec8';  // Replace with your database password
-$port = '5432';  // Default PostgreSQL port
+$host = $credentials['host'];
+$db = $credentials['db'];
+$user = $credentials['user'];
+$pass = $credentials['pass'];
+$port = $credentials['port'];
 
 // DSN (Data Source Name)
 $dsn = "pgsql:host=$host;port=$port;dbname=$db;";
