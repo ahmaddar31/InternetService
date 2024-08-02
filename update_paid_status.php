@@ -61,7 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $currentMonthArabic = getArabicMonth(date('n'));
 
                 // Generate the WhatsApp URL with the Arabic message
-                $message = urlencode("مرحبا $customer_name, تم تسديد رسوم شهر $currentMonthArabic. شكراً!");
+                $message = urlencode("مرحبا $customer_name, تم تسديد رسوم الإنترنت شهر $currentMonthArabic. شكراً!");
                 $whatsappUrl = "https://wa.me/$customer_phone?text=$message";
 
                 // Redirect to the WhatsApp URL
