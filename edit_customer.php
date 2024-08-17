@@ -29,16 +29,96 @@ try {
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./bootstrap-4.6.2-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <title>Edit Customer</title>
+    <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+
+        .container {
+            margin-top: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-primary, .btn-danger {
+            margin-right: 5px;
+        }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-info h2 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-info p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .form-control {
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h3>Edit Customer</h3>
-        <form action="update_customer.php" method="post">
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">CoDelta Technologies</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.php">Logout <i class="fas fa-sign-out-alt"></i></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-info">
+            <h2>Edit Customer</h2>
+            <p>Modify the details of the customer</p>
+        </div>
+
+        <form action="update_customer.php" method="post" onsubmit="return validatePhoneNumber();">
             <input type="hidden" name="customer_id" value="<?php echo $customer['c_id']; ?>">
+            <div class="form-group">
+                <label for="client_id">Client ID</label>
+                <input type="text" class="form-control" id="client_id" name="client_id" value="<?php echo htmlspecialchars($customer['c_id']); ?>" required>
+            </div>
             <div class="form-group">
                 <label for="c_name">Name</label>
                 <input type="text" class="form-control" id="c_name" name="c_name" value="<?php echo htmlspecialchars($customer['c_name']); ?>" required>
@@ -77,63 +157,27 @@ try {
                     <input type="radio" id="bundle_20mb" name="bundle" value="20 MB" <?php echo $customer['bundle'] == '20 MB' ? 'checked' : ''; ?> required>
                     <label for="bundle_20mb">20 MB</label>
                 </div>
-                <div>
-                    <input type="radio" id="bundle_gaming1" name="bundle" value="gaming1" <?php echo $customer['bundle'] == 'gaming1' ? 'checked' : ''; ?> required>
-                    <label for="bundle_gaming1">Gaming 1</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_gaming2" name="bundle" value="gaming2" <?php echo $customer['bundle'] == 'gaming2' ? 'checked' : ''; ?> required>
-                    <label for="bundle_gaming2">Gaming 2</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_gaming3" name="bundle" value="gaming3" <?php echo $customer['bundle'] == 'gaming3' ? 'checked' : ''; ?> required>
-                    <label for="bundle_gaming3">Gaming 3</label>
-                </div>
             </div>
             <div class="form-group">
                 <label for="bundle_price">Bundle Price</label>
-                <input type="number" class="form-control" id="bundle_price" name="bundle_price" value="<?php echo htmlspecialchars($customer['bundle_price']); ?>" step="0.01" readonly>
+                <input type="number" class="form-control" id="bundle_price" name="bundle_price" value="<?php echo htmlspecialchars($customer['bundle_price']); ?>" step="0.01" required>
             </div>
-            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-save"></i> Save Changes</button>
+            <a href="index.php" class="btn btn-danger">Cancel</a>
         </form>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const radioButtons = document.querySelectorAll('input[name="bundle"]');
-            const bundlePriceInput = document.getElementById('bundle_price');
+        function validatePhoneNumber() {
+            const phoneInput = document.getElementById('phone').value;
+            const phonePattern = /^[0-9]{8}$/;
 
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    let price = 0;
-
-                    if (document.getElementById('bundle_8mb').checked) {
-                        price = 25;
-                    } else if (document.getElementById('bundle_10mb').checked) {
-                        price = 30;
-                    } else if (document.getElementById('bundle_12mb').checked) {
-                        price = 35;
-                    } else if (document.getElementById('bundle_14mb').checked) {
-                        price = 40;
-                    } else if (document.getElementById('bundle_16mb').checked) {
-                        price = 45;
-                    } else if (document.getElementById('bundle_20mb').checked) {
-                        price = 55;
-                    } else if (document.getElementById('bundle_gaming1').checked) {
-                        price = 35;
-                    } else if (document.getElementById('bundle_gaming2').checked) {
-                        price = 40;
-                    } else if (document.getElementById('bundle_gaming3').checked) {
-                        price = 50;
-                    }
-
-                    bundlePriceInput.value = price;
-                });
-            });
-        });
+            if (!phonePattern.test(phoneInput)) {
+                alert('Phone number must be exactly 8 digits and contain only numbers.');
+                return false;
+            }
+            return true;
+        }
     </script>
 </body>
 </html>

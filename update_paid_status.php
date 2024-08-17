@@ -31,8 +31,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $paid_status = $_POST['paid'];
 
     try {
-        // Update the paid status in the database
-        $query = "UPDATE customer SET paid = :paid WHERE c_id = :id";
+        // Update the paid status and last paid date in the database
+        $query = "UPDATE customer SET paid = :paid, last_paid_date = NOW() WHERE c_id = :id";
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':paid', $paid_status, PDO::PARAM_STR);
         $stmt->bindParam(':id', $customer_id, PDO::PARAM_INT);

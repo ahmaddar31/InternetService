@@ -1,96 +1,75 @@
-.head div{
-    padding: 20px;
+body {
+    background-color: #f4f7f6;
+    font-family: 'Roboto', sans-serif;
 }
 
-.head a{
-    color: white;
-    text-decoration: none;
-    
-}
-.head a:hover{
-
-    color: black;
-}
-center .head{
-    background-color: rgba(165, 185, 177, 0.811);
-    display: flex;
-    color: white;
-    justify-content: center;
-    align-items: center;
-    width: 40%;
+.card {
+    margin-top: 50px;
+    border: none;
     border-radius: 10px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
 }
 
-.detailsmed{
-    margin-left: 3%;
-    margin-right: 3%;
-}
-.card{
-    margin-top: 4rem;
-    padding: 2rem;
-}
-
-
-label{
-    margin-right: 75%;
-}
-
-.form-control{
-    margin:0 5px;
-}
-
-.btn{
-    background-color:rgba(165, 185, 177, 0.811) ;
-}
-.btnr:hover{
-    transform: scale(1.1);
-}
-.carousel-inner{
-    width: 60%;
-}
-
-.over_img {
+.card-header {
+    background-color: #007bff;
+    color: white;
+    font-size: 24px;
     text-align: center;
-    overflow: auto;
-    margin: 20px 0;
-    z-index: 1;
+    border-radius: 10px 10px 0 0;
 }
 
-.ph_name{
-    position: absolute;
+.card-body {
+    padding: 30px;
+}
+
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    box-shadow: none;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: none;
+}
+
+.btn-lg {
+    padding: 10px 20px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+}
+
+.form-check-label {
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.totals-container {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
     text-align: center;
-    margin-top: 45%;
-    margin-right: 25%;
-    margin-left: 12%;
-    color: white;
-    font-size: 55px;
-}
-.ph_adr{
-    position: absolute;
-    text-align: center;
-    margin-top: 60%;
-    margin-right: 25%;
-    margin-left: 12%;
-    color: white;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
 
-
-
-
-.badge{
-    background-color:rgba(165, 185, 177, 0.811);
-    margin: 2% 5% 2% 2%;
-    padding: 10px;
-    color: white;
+.totals-container p {
+    margin: 0;
+    font-size: 18px;
 }
 
-.img_entry{
-    width: 70%;
+.total-number, .total-amount {
+    font-size: 22px;
+    font-weight: bold;
 }
-
-.btn-outline:hover{
-    background-color: rgba(165, 185, 177, 0.811);
-    color: white;
-}
-
- 

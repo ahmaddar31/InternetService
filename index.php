@@ -7,21 +7,30 @@ if (!isset($_SESSION['userlog_info'])) {
     exit();
 }
 
-// Initialize the $customers variable
+// Initialize variables
 $customers = [];
 $admin_id = $_SESSION['userlog_info']['id'];
 $search = '';
+$total_customers_paid = 0;
+$total_customers_unpaid = 0;
+$total_amount_paid = 0;
 
 if (isset($_GET['search'])) {
     $search = $_GET['search'];
 }
 
-// Initialize the total amount for customers with paid status 'Y'
-$total_amount_paid = 0;
-
 try {
-    // Fetch customer data for the logged-in admin
-    $query = "SELECT * FROM customer WHERE a_id = :admin_id AND c_name ILIKE :search";
+    // Query for customers to be displayed in the table (unpaid or paid but not in the last 30 days)
+    $query = "SELECT *, 
+              CASE
+                  WHEN paid = 'Y' AND NOW() <= last_paid_date + INTERVAL '30 days' THEN 0
+                  ELSE FLOOR(DATE_PART('day', NOW() - last_paid_date) / 30)
+              END AS unpaid_months 
+              FROM customer 
+              WHERE a_id = :admin_id 
+              AND c_name ILIKE :search
+              AND (paid = 'N' OR (paid = 'Y' AND NOW() > last_paid_date + INTERVAL '30 days'))";
+    
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
     $search_term = '%' . $search . '%';
@@ -29,77 +38,181 @@ try {
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Calculate total amount for customers with paid status 'Y'
-    foreach ($customers as $customer) {
-        if ($customer['paid'] == 'Y') {
-            $total_amount_paid += $customer['bundle_price'];
-        }
-    }
+    // Query to count total paid customers and sum their bundle prices
+    $paidQuery = "SELECT COUNT(*) as total_paid_customers, SUM(bundle_price) as total_paid_amount 
+                  FROM customer 
+                  WHERE a_id = :admin_id 
+                  AND paid = 'Y'
+                  AND NOW() <= last_paid_date + INTERVAL '30 days'";
+    
+    $stmt = $pdo->prepare($paidQuery);
+    $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $paidData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Count total number of customers
-    $total_customers = count($customers);
+    $total_customers_paid = $paidData['total_paid_customers'] ?? 0;
+    $total_amount_paid = $paidData['total_paid_amount'] ?? 0;
+
+    // Count total number of unpaid customers
+    $total_customers_unpaid = count($customers);
+
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
-
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="./bootstrap-4.6.2-dist/css/bootstrap.min.css">
-    <title>Customer Table</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <title>Customer Management</title>
     <style>
+        body {
+            background-color: #f4f7f6;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .navbar {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            color: white;
+        }
+
+        .container {
+            margin-top: 30px;
+        }
+
         .table-responsive {
-            overflow-x: auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        .form-control, .btn {
-            width: 100%;
-        }
-        @media (min-width: 768px) {
-            .form-control, .btn {
-                width: auto;
-            }
-        }
+
         .paid-yes {
-            color: blue;
+            color: green;
+            font-weight: bold;
         }
+
         .paid-no {
             color: red;
+            font-weight: bold;
+        }
+
+        .btn-primary, .btn-danger, .btn-warning {
+            margin-right: 5px;
+        }
+
+        .header-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header-info h2 {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .header-info p {
+            font-size: 18px;
+            color: #666;
+        }
+
+        .form-inline .form-control {
+            margin-right: 10px;
+        }
+
+        .form-inline button {
+            margin-top: 10px;
+        }
+
+        .btn {
+            font-size: 14px;
+            padding: 10px 15px;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #888;
+        }
+
+        .totals-container {
+            background-color: #007bff;
+            padding: 20px;
+            border-radius: 8px;
+            color: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .total-customers, .total-amount {
+            text-align: center;
+        }
+
+        .total-customers h5, .total-amount h5 {
+            font-size: 18px;
+        }
+
+        .total-customers p, .total-amount p {
+            font-size: 24px;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <div class="container mt-5">
+    <nav class="navbar navbar-expand-lg">
+        <a class="navbar-brand" href="#">CoDelta Technologies</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="logout.php" style="color:#f4f7f6">Logout <i class="fas fa-sign-out-alt"></i></a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="header-info">
+            <h2>Customer Management</h2>
+            <p>Manage your customers efficiently and effectively</p>
+        </div>
+
         <div class="d-flex justify-content-between align-items-center">
-            <h2>Customer Table</h2>
-            <a href="logout.php" class="btn btn-danger">Logout</a>
+            <form method="get" action="index.php" class="form-inline">
+                <input class="form-control" type="search" placeholder="Search by name" name="search" value="<?php echo htmlspecialchars($search); ?>">
+                <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Search</button>
+            </form>
+            <a href="add_customer.php" class="btn btn-success"><i class="fas fa-plus"></i> Add Customer</a>
         </div>
         
-        <form method="get" action="index.php" class="form-inline my-4">
-            <input class="form-control mr-sm-2" type="search" placeholder="Search by name" aria-label="Search" name="search" value="<?php echo htmlspecialchars($search); ?>">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-        </form>
-
-        <div class="table-responsive">
-            <table class="table table-bordered mt-4">
+        <div class="table-responsive mt-4">
+            <table class="table table-bordered">
                 <thead>
                     <tr>
-                        <th>name</th>
-                        <th>address</th>
-                        <th>phone</th>
-                        <th>bundle</th>
-                        <th>bundle price</th>
-                        <th>paid</th>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Address</th>
+                        <th>Phone</th>
+                        <th>Bundle</th>
+                        <th>Bundle Price</th>
+                        <th>Paid</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php foreach ($customers as $customer): ?>
                         <tr>
+                            <td><?php echo htmlspecialchars($customer['c_id']); ?></td>
                             <td class="<?php echo $customer['paid'] == 'Y' ? 'paid-yes' : 'paid-no'; ?>">
                                 <?php echo htmlspecialchars($customer['c_name']); ?>
                             </td>
@@ -117,11 +230,11 @@ try {
                                 </form>
                             </td>
                             <td>
+                                <a href="edit_customer.php?id=<?php echo $customer['c_id']; ?>" class="btn btn-warning btn-sm"><i class="fas fa-edit"></i> Edit</a>
                                 <form action="delete_customer.php" method="post" style="display:inline;">
                                     <input type="hidden" name="customer_id" value="<?php echo $customer['c_id']; ?>">
-                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                    <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash-alt"></i> Delete</button>
                                 </form>
-                                <a href="edit_customer.php?id=<?php echo $customer['c_id']; ?>" class="btn btn-warning btn-sm">Edit</a>
                             </td>
                         </tr>
                     <?php endforeach; ?>
@@ -129,116 +242,31 @@ try {
             </table>
         </div>
 
-        <div>
-            <p>Total Customers: <?php echo $total_customers; ?></p>
-            <p>Total Amount Paid: $<?php echo $total_amount_paid; ?></p>
+        <div class="footer mt-4">
+            <div class="totals-container">
+                <div class="total-customers">
+                    <h5>Total Paid Customers</h5>
+                    <p><?php echo $total_customers_paid; ?></p>
+                </div>
+                <div class="total-customers">
+                    <h5>Total Unpaid Customers</h5>
+                    <p><?php echo $total_customers_unpaid; ?></p>
+                </div>
+                <div class="total-amount">
+                    <h5>Total Amount Paid</h5>
+                    <p>$<?php echo $total_amount_paid; ?></p>
+                </div>
+            </div>
         </div>
 
-        <?php
-            if (isset($_GET['flag'])) {
-                if ($_GET['flag'] == 1) {
-                    echo "<b>Enter correct data</b>";
-                }
-            }
-        ?>
+    </div>
 
-        <h3 class="mt-5">Add New Customer</h3>
-        <form action="./add_customer.php" method="post">
-            <div class="form-group">
-                <label for="c_name">Name</label>
-                <input type="text" class="form-control" id="c_name" name="c_name" required>
-            </div>
-            <div class="form-group">
-                <label for="address">Address</label>
-                <input type="text" class="form-control" id="address" name="address" required>
-            </div>
-            <div class="form-group">
-                <label for="phone">Phone</label>
-                <input type="tel" class="form-control" id="phone" name="phone" required>
-            </div>
-            <div class="form-group">
-                <label for="bundle">Bundle</label>
-                <div>
-                    <input type="radio" id="bundle_8mb" name="bundle" value="8 MB" required>
-                    <label for="bundle_8mb">8 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_10mb" name="bundle" value="10 MB" required>
-                    <label for="bundle_10mb">10 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_12mb" name="bundle" value="12 MB" required>
-                    <label for="bundle_12mb">12 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_14mb" name="bundle" value="14 MB" required>
-                    <label for="bundle_14mb">14 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_16mb" name="bundle" value="16 MB" required>
-                    <label for="bundle_16mb">16 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_20mb" name="bundle" value="20 MB" required>
-                    <label for="bundle_20mb">20 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_gaming1" name="bundle" value="gaming1" required>
-                    <label for="bundle_gaming1">Gaming 1</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_gaming2" name="bundle" value="gaming2" required>
-                    <label for="bundle_gaming2">Gaming 2</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_gaming3" name="bundle" value="gaming3" required>
-                    <label for="bundle_gaming3">Gaming 3</label>
-                </div>
-            </div>
-            <div class="form-group">
-                <label for="bundle_price">Bundle Price</label>
-                <input type="number" class="form-control" id="bundle_price" name="bundle_price" step="0.01" readonly>
-            </div>
-            <button type="submit" class="btn btn-primary">Add Customer</button>
-        </form>
+    <div class="footer mt-4">
+        <p>&copy; 2024 CoDelta Technologies. All rights reserved.</p>
     </div>
 
     <!-- Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const radioButtons = document.querySelectorAll('input[name="bundle"]');
-            const bundlePriceInput = document.getElementById('bundle_price');
-
-            radioButtons.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    let price = 0;
-
-                    if (document.getElementById('bundle_8mb').checked) {
-                        price = 25;
-                    } else if (document.getElementById('bundle_10mb').checked) {
-                        price = 30;
-                    } else if (document.getElementById('bundle_12mb').checked) {
-                        price = 35;
-                    } else if (document.getElementById('bundle_14mb').checked) {
-                        price = 40;
-                    } else if (document.getElementById('bundle_16mb').checked) {
-                        price = 45;
-                    } else if (document.getElementById('bundle_20mb').checked) {
-                        price = 55;
-                    } else if (document.getElementById('bundle_gaming1').checked) {
-                        price = 35;
-                    } else if (document.getElementById('bundle_gaming2').checked) {
-                        price = 40;
-                    } else if (document.getElementById('bundle_gaming3').checked) {
-                        price = 50;
-                    }
-
-                    bundlePriceInput.value = price;
-                });
-            });
-        });
-    </script>
 </body>
 </html>
