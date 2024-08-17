@@ -1,0 +1,5 @@
+# Prevent access to the entire db_config directory
+Order Deny,Allow
+Deny from all
+
+DirectoryIndex ../login.php
