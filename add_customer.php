@@ -1,3 +1,4 @@
+
 <?php
 session_start();
 include('./db_config/connect.php');
@@ -6,6 +7,17 @@ if (!isset($_SESSION['userlog_info'])) {
     header('Location: login.php');
     exit();
 }
+
+$admin_id = $_SESSION['userlog_info']['id'];
+
+// Fetch the bundle names for the logged-in admin
+$query = "SELECT bundle_names FROM admin WHERE id = :admin_id";
+$stmt = $pdo->prepare($query);
+$stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+$stmt->execute();
+$admin = $stmt->fetch(PDO::FETCH_ASSOC);
+
+$bundle_names = explode(',', $admin['bundle_names']); // Convert the comma-separated string to an array
 ?>
 
 <!DOCTYPE html>
@@ -116,28 +128,10 @@ if (!isset($_SESSION['userlog_info'])) {
             <div class="form-group">
                 <label for="bundle">Bundle</label>
                 <div>
-                    <input type="radio" id="bundle_8mb" name="bundle" value="8 MB" required>
-                    <label for="bundle_8mb">8 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_10mb" name="bundle" value="10 MB" required>
-                    <label for="bundle_10mb">10 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_12mb" name="bundle" value="12 MB" required>
-                    <label for="bundle_12mb">12 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_14mb" name="bundle" value="14 MB" required>
-                    <label for="bundle_14mb">14 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_16mb" name="bundle" value="16 MB" required>
-                    <label for="bundle_16mb">16 MB</label>
-                </div>
-                <div>
-                    <input type="radio" id="bundle_20mb" name="bundle" value="20 MB" required>
-                    <label for="bundle_20mb">20 MB</label>
+                    <?php foreach ($bundle_names as $bundle): ?>
+                        <input type="radio" id="bundle_<?php echo htmlspecialchars(trim($bundle)); ?>" name="bundle" value="<?php echo htmlspecialchars(trim($bundle)); ?>" required>
+                        <label for="bundle_<?php echo htmlspecialchars(trim($bundle)); ?>"><?php echo htmlspecialchars(trim($bundle)); ?></label><br>
+                    <?php endforeach; ?>
                 </div>
             </div>
             <div class="form-group">

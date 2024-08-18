@@ -13,14 +13,16 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $bundle_names = $_POST['bundle_names']; // Get bundle names
 
     try {
-        $query = "INSERT INTO admin (m_id, name, username, password) VALUES (:m_id, :name, :username, :password)";
+        $query = "INSERT INTO admin (m_id, name, username, password, bundle_names) VALUES (:m_id, :name, :username, :password, :bundle_names)";
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':m_id', $manager_id, PDO::PARAM_INT);
         $stmt->bindParam(':name', $name, PDO::PARAM_STR);
         $stmt->bindParam(':username', $username, PDO::PARAM_STR);
         $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+        $stmt->bindParam(':bundle_names', $bundle_names, PDO::PARAM_STR); // Bind bundle names
         $stmt->execute();
         header('Location: manage_admins.php');
         exit();
@@ -116,6 +118,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="bundle_names">Bundle Names</label>
+                    <input type="text" class="form-control" id="bundle_names" name="bundle_names" placeholder="Enter bundle names separated by commas" required>
                 </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Add Admin</button>

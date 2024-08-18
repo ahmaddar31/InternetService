@@ -28,13 +28,15 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $name = $_POST['name'];
     $username = $_POST['username'];
     $password = $_POST['password'];
+    $bundle_names = $_POST['bundle_names']; // Update bundle names
 
     try {
-        $query = "UPDATE admin SET name = :name, username = :username, password = :password WHERE id = :id";
+        $query = "UPDATE admin SET name = :name, username = :username, password = :password, bundle_names = :bundle_names WHERE id = :id";
         $stmt = $pdo->prepare($query);
         $stmt->bindParam(':name', $name, PDO::PARAM_STR);
         $stmt->bindParam(':username', $username, PDO::PARAM_STR);
         $stmt->bindParam(':password', $password, PDO::PARAM_STR);
+        $stmt->bindParam(':bundle_names', $bundle_names, PDO::PARAM_STR); // Bind bundle names
         $stmt->bindParam(':id', $admin_id, PDO::PARAM_INT);
         $stmt->execute();
         header('Location: manage_admins.php');
@@ -110,7 +112,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         <div class="collapse navbar-collapse">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="logout.php" style="color:#f4f7f6">Logout <i class="fas fa-sign-out-alt"></i></a>
+                    <a class="nav-link" href="logout.php">Logout <i class="fas fa-sign-out-alt"></i></a>
                 </li>
             </ul>
         </div>
@@ -132,6 +134,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                     <label for="password">Password</label>
                     <input type="password" class="form-control" id="password" name="password" value="<?php echo htmlspecialchars($admin['password']); ?>" required>
                 </div>
+                <div class="form-group">
+                    <label for="bundle_names">Bundle Names</label>
+                    <input type="text" class="form-control" id="bundle_names" name="bundle_names" value="<?php echo htmlspecialchars($admin['bundle_names']); ?>" required>
+                </div>
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                     <a href="manage_admins.php" class="btn btn-danger">Cancel</a>
@@ -148,3 +154,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 </body>
 </html>
+
