@@ -20,28 +20,33 @@ if (isset($_GET['search'])) {
 }
 
 try {
-    // Automatically reset paid status to 'N' if 30 days have passed since last payment
-    $resetQuery = "UPDATE customer 
-                   SET paid = 'N' 
-                   WHERE paid = 'Y' 
-                   AND NOW() > last_paid_date + INTERVAL '30 days'
-                   AND a_id = :admin_id";
+    // On the 1st of each month, reset all paid customers to unpaid (N)
+    $current_date = new DateTime();
+    $first_day_of_month = new DateTime('first day of this month');
+    $first_day_of_month_str = $first_day_of_month->format('Y-m-d'); // Save it in a variable
 
-    $stmt = $pdo->prepare($resetQuery);
-    $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
-    $stmt->execute();
+    if ($current_date->format('j') == 1) {
+        $resetQuery = "UPDATE customer 
+                       SET paid = 'N' 
+                       WHERE paid = 'Y'
+                       AND a_id = :admin_id";
 
-    // Query for customers to be displayed in the table (unpaid or paid but not in the last 30 days)
+        $stmt = $pdo->prepare($resetQuery);
+        $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+        $stmt->execute();
+    }
+
+    // Query to fetch customers who are unpaid (paid = 'N')
     $query = "SELECT *, 
               CASE
-                  WHEN paid = 'Y' AND NOW() <= last_paid_date + INTERVAL '30 days' THEN 0
-                  ELSE FLOOR(DATE_PART('day', NOW() - last_paid_date) / 30)
+                  WHEN paid = 'N' THEN FLOOR(DATE_PART('day', NOW() - last_paid_date) / 30)
+                  ELSE 0
               END AS unpaid_months 
               FROM customer 
               WHERE a_id = :admin_id 
               AND c_name ILIKE :search
-              AND (paid = 'N' OR (paid = 'Y' AND NOW() > last_paid_date + INTERVAL '30 days'))";
-    
+              AND paid = 'N'";  // Only show customers who are unpaid
+
     $stmt = $pdo->prepare($query);
     $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
     $search_term = '%' . $search . '%';
@@ -49,23 +54,24 @@ try {
     $stmt->execute();
     $customers = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Query to count total paid customers and sum their bundle prices
+    // Recalculate total number of unpaid customers
+    $total_customers_unpaid = count($customers);
+
+    // Query to count total paid customers and sum their bundle prices (considering payments after the 1st of the current month)
     $paidQuery = "SELECT COUNT(*) as total_paid_customers, SUM(bundle_price) as total_paid_amount 
                   FROM customer 
                   WHERE a_id = :admin_id 
                   AND paid = 'Y'
-                  AND NOW() <= last_paid_date + INTERVAL '30 days'";
-    
+                  AND last_paid_date >= :first_day_of_month";
+
     $stmt = $pdo->prepare($paidQuery);
     $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+    $stmt->bindParam(':first_day_of_month', $first_day_of_month_str, PDO::PARAM_STR); // Use the variable here
     $stmt->execute();
     $paidData = $stmt->fetch(PDO::FETCH_ASSOC);
 
     $total_customers_paid = $paidData['total_paid_customers'] ?? 0;
     $total_amount_paid = $paidData['total_paid_amount'] ?? 0;
-
-    // Count total number of unpaid customers
-    $total_customers_unpaid = count($customers);
 
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
