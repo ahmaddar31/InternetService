@@ -20,6 +20,17 @@ if (isset($_GET['search'])) {
 }
 
 try {
+    // Automatically reset paid status to 'N' if 30 days have passed since last payment
+    $resetQuery = "UPDATE customer 
+                   SET paid = 'N' 
+                   WHERE paid = 'Y' 
+                   AND NOW() > last_paid_date + INTERVAL '30 days'
+                   AND a_id = :admin_id";
+
+    $stmt = $pdo->prepare($resetQuery);
+    $stmt->bindParam(':admin_id', $admin_id, PDO::PARAM_INT);
+    $stmt->execute();
+
     // Query for customers to be displayed in the table (unpaid or paid but not in the last 30 days)
     $query = "SELECT *, 
               CASE
